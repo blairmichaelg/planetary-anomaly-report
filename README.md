@@ -1,5 +1,6 @@
 # Planetary Anomaly & Threat Report (PATR)
 
+[![CI](https://github.com/blairmichaelg/planetary-anomaly-report/actions/workflows/ci.yml/badge.svg)](https://github.com/blairmichaelg/planetary-anomaly-report/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Pydantic V2](https://img.shields.io/badge/Pydantic-V2%20(Rust%20Core)-e92063.svg)](https://docs.pydantic.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
