@@ -32,7 +32,7 @@ Modern cloud automation architectures frequently default to heavy, multi-tier de
 | **Fault Resilience** | **Tenacity** | Declarative exponential backoff retries with full jitter (`wait_exponential`) targeting transient 429 rate-limits, 502/503/504 gateway faults, and socket timeouts. |
 | **Document Synthesis** | **ReportLab (`pdfgen.canvas`)** | Low-level vector PDF geometry engine. Uses absolute millimeter-based coordinate arithmetic to guarantee a single-page layout without reflow crashes. |
 | **Raster Processing** | **Pillow (PIL)** | In-memory image decompression and bicubic thumbnail resampling of multi-megabyte NASA EPIC earth observation PNGs directly in volatile streams. |
-| **Storage Architecture** | **In-Memory Streams / SQLite WAL** | Volatile `io.BytesIO` streams for transient pipelines; SQLite Write-Ahead Logging (WAL) compatible pattern for local state storage without reader/writer lock contention. |
+| **Storage Architecture** | **Volatile In-Memory Buffers (`io.BytesIO`)** | Strict zero-disk I/O guarantee: all HTTP payloads, intermediate rasters, and synthesized PDF binaries reside strictly in volatile memory, preventing NAND flash wear and eliminating secondary storage footprints. |
 | **Security & Dispatch** | **`smtplib` + `ssl`** | Authenticated ESMTP over port 587 with opportunistic STARTTLS, verified against the host OS native certificate trust store. |
 | **OS Automation** | **Windows Task Scheduler (XML)** | Native OS integration featuring `<WakeToRun>true</WakeToRun>` to resume sleeping hosts and `<StartWhenAvailable>true</StartWhenAvailable>` to guarantee delivery after downtime. |
 
@@ -170,3 +170,4 @@ Register-ScheduledTask -Xml (Get-Content ".\task_scheduler.xml" -Raw) `
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for details.
+
