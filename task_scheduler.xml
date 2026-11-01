@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<!--
+  Windows Task Scheduler XML — Planetary Anomaly & Threat Report
+  ==============================================================
+
+  HOW TO IMPORT:
+  1. Open Task Scheduler (taskschd.msc).
+  2. Action menu → "Import Task…"
+  3. Select this file.
+  4. Review and click OK.
+
+  OR via PowerShell (run as Administrator):
+      Register-ScheduledTask -Xml (Get-Content ".\task_scheduler.xml" -Raw) `
+                             -TaskName "PlanetaryAnomalyReport" `
+                             -Force
+
+  BEFORE IMPORTING, update every placeholder wrapped in <CHANGE_ME> tags:
+    · CHANGE_ME_WINDOWS_USERNAME  — your Windows login name  (e.g. Michael)
+    · CHANGE_ME_PYTHON_PATH       — full path to python.exe in your venv
+                                    e.g. C:\Users\Michael\projects\world_report\.venv\Scripts\python.exe
+    · CHANGE_ME_PROJECT_DIR       — folder containing worker.py and .env
+                                    e.g. C:\Users\Michael\projects\world_report
+
+  SCHEDULE: runs daily at 06:00 local time.  Edit <StartBoundary> to change.
+
+  WakeToRun: the task will power-on or resume from sleep/hibernate so the
+             report is delivered even if the machine is not already awake.
+-->
+<Task version="1.4"
+      xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+
+  <!-- ── Identity ─────────────────────────────────────────────────────────── -->
+  <RegistrationInfo>
+    <Date>2026-11-01T00:00:00</Date>
+    <Author>CHANGE_ME_WINDOWS_USERNAME</Author>
+    <Description>
+      Fetches planetary, seismic, geomagnetic, oceanic, and launch data from
+      public APIs, assembles a single-page PDF dashboard entirely in memory,
+      and dispatches it via Gmail SMTP.  No disk I/O for data or PDFs.
+    </Description>
+    <URI>\PlanetaryAnomalyReport</URI>
+  </RegistrationInfo>
+
+  <!-- ── Trigger: daily at 06:00, wake machine if asleep ──────────────────── -->
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-11-02T06:00:00</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+
+  <!-- ── Principal (run as the logged-in user) ────────────────────────────── -->
+  <Principals>
+    <Principal id="Author">
+      <UserId>CHANGE_ME_WINDOWS_USERNAME</UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+
+  <!-- ── Settings ─────────────────────────────────────────────────────────── -->
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+
+    <!-- KEY: wake the PC from sleep / hibernate to run this task -->
+    <WakeToRun>true</WakeToRun>
+
+    <ExecutionTimeLimit>PT10M</ExecutionTimeLimit>
+    <Priority>7</Priority>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
+    <StartWhenAvailable>true</StartWhenAvailable>
+
+    <!-- Retry up to 3 times with a 5-minute gap if startup fails -->
+    <RestartOnFailure>
+      <Interval>PT5M</Interval>
+      <Count>3</Count>
+    </RestartOnFailure>
+
+    <!-- Idle: don't require idle, just run -->
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+
+  <!-- ── Action ────────────────────────────────────────────────────────────── -->
+  <Actions Context="Author">
+    <Exec>
+      <!-- Full path to python.exe inside your virtual environment -->
+      <Command>CHANGE_ME_PYTHON_PATH</Command>
+
+      <!-- worker.py lives in the project directory -->
+      <Arguments>worker.py</Arguments>
+
+      <!-- Task Scheduler sets CWD here so .env is found via pydantic-settings -->
+      <WorkingDirectory>CHANGE_ME_PROJECT_DIR</WorkingDirectory>
+    </Exec>
+  </Actions>
+
+</Task>
+
